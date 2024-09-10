@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -80,8 +84,12 @@ WSGI_APPLICATION = 'casaya.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_NAME'),  # El nombre de tu base de datos
+        'USER': os.getenv('POSTGRES_USER'),  # El usuario que has creado
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),  # La contraseña del usuario
+        'HOST': os.getenv('POSTGRES_HOST'),  # O la dirección IP si está en otro servidor
+        'PORT': os.getenv('POSTGRES_PORT'),  # Puerto de PostgreSQL (por defecto 5432)
     }
 }
 
