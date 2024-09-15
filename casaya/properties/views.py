@@ -2,8 +2,8 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import generics
-from .models import Property
-from .serializers import PropertySerializer
+from .models import Property, Transaction
+from .serializers import PropertySerializer, TransactionSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import permissions
 
@@ -26,3 +26,15 @@ class PropertyRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]  # Solo usuarios propietarios y autenticados pueden modificar 
+
+# Lista todas las transacciones o crea una nueva
+class TransactionListCreateView(generics.ListCreateAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]  # Solo usuarios autenticados pueden crear
+
+# Ver, actualizar o eliminar una transacción específica
+class TransactionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]  # Solo usuarios autenticados pueden modificar

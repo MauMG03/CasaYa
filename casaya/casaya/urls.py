@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from users.views import UserDetailView
-from properties.views import PropertyListCreateView, PropertyRetrieveUpdateDestroyView
+from properties.views import PropertyListCreateView, PropertyRetrieveUpdateDestroyView, TransactionListCreateView, TransactionRetrieveUpdateDestroyView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +26,6 @@ urlpatterns = [
     path('user/<int:user_id>/', UserDetailView.as_view(), name='user-detail'),
     path('properties/', PropertyListCreateView.as_view(), name='property-list-create'),
     path('properties/<int:pk>/', PropertyRetrieveUpdateDestroyView.as_view(), name='property-detail'),
+    path('transactions/', TransactionListCreateView.as_view(), name='transaction-list-create'),
+    path('transactions/<int:pk>/', TransactionRetrieveUpdateDestroyView.as_view(), name='transaction-detail'),
 ]
