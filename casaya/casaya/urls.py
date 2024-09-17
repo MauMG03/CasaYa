@@ -15,8 +15,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from users.views import UserDetailView
+from properties.views import PropertyListCreateView, PropertyRetrieveUpdateDestroyView, TransactionListCreateView, TransactionRetrieveUpdateDestroyView, CommentListCreateView, CommentRetrieveUpdateDestroyView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('users/auth/', include('djoser.urls')),
+    path('users/auth/', include('djoser.urls.jwt')),
+    path('user/<int:user_id>/', UserDetailView.as_view(), name='user-detail'),
+    path('properties/', PropertyListCreateView.as_view(), name='property-list-create'),
+    path('properties/<int:pk>/', PropertyRetrieveUpdateDestroyView.as_view(), name='property-detail'),
+    path('transactions/', TransactionListCreateView.as_view(), name='transaction-list-create'),
+    path('transactions/<int:pk>/', TransactionRetrieveUpdateDestroyView.as_view(), name='transaction-detail'),
+    path('comments/', CommentListCreateView.as_view(), name='comment-list-create'),
+    path('comments/<int:pk>/', CommentRetrieveUpdateDestroyView.as_view(), name='comment-detail'),
 ]
