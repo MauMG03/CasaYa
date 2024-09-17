@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import generics
+from django.db.models import Avg
 from .models import Property, Transaction, Comment
 from .serializers import PropertySerializer, TransactionSerializer, CommentSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -27,6 +28,17 @@ class PropertyRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PropertySerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]  # Solo usuarios propietarios y autenticados pueden modificar 
 
+class PropertyCommentsListView(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        # Obtener el ID de la propiedad desde la URL
+        property_id = self.kwargs.get('property_id')
+
+        # Filtrar comentarios por el ID de la propiedad
+        return Comment.objects.filter(property_id=property_id)
+
 # Lista todas las transacciones o crea una nueva
 class TransactionListCreateView(generics.ListCreateAPIView):
     queryset = Transaction.objects.all()
@@ -45,6 +57,10 @@ class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def perform_create(self, serializer):
+        # Llamamos a create con el usuario autenticado
+        serializer.save(user=self.request.user)
+
 # Ver, actualizar o eliminar un comentario específico
 class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
@@ -57,7 +73,7 @@ class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         # Actualizar el rate de la propiedad después de eliminar un comentario
         comments = property.comentarios.all()
         if comments.exists():
-            average_rate = comments.aggregate(avg_rate=serializers.Avg('rate'))['avg_rate']
+            average_rate = comments.aggregate(avg_rate=Avg('rate'))['avg_rate']
         else:
             average_rate = None
         property.rate = average_rate

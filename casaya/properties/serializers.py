@@ -1,5 +1,6 @@
 # propiedades/serializers.py
 from rest_framework import serializers
+from django.db.models import Avg
 from .models import Property, Transaction, Comment
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -17,29 +18,28 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
-    property = serializers.SlugRelatedField(slug_field='name', queryset=Property.objects.all())
 
     class Meta:
         model = Comment
         fields = '__all__'
-    
-    def create(self, validated_data):
-        # Llamamos al método create normal
-        comment = super().create(validated_data)
-        # Actualizamos el rate promedio de la propiedad asociada
-        self.update_property_rate(comment.property)
-        return comment
 
-    def update(self, instance, validated_data):
-        # Llamamos al método update normal
-        comment = super().update(instance, validated_data)
-        # Actualizamos el rate promedio de la propiedad asociada
+    def create(self, validated_data):
+        # Obtenemos el usuario autenticado
+        request = self.context.get('request')
+        validated_data['user'] = request.user
+
+        # Creamos el comentario
+        comment = super().create(validated_data)
+
+        # Llamamos a la función que actualizará el rate promedio de la propiedad
         self.update_property_rate(comment.property)
+
         return comment
 
     def update_property_rate(self, property):
-        comments = property.comentarios.all()
-        if comments.exists():
-            average_rate = comments.aggregate(avg_rate=serializers.Avg('rate'))['avg_rate']
-            property.rate = average_rate
-            property.save()
+        # Calculamos el promedio de las calificaciones de los comentarios asociados a la propiedad
+        avg_rate = property.comentarios.aggregate(Avg('rate'))['rate__avg']
+
+        # Asignamos el valor promedio al campo 'rate' de la propiedad
+        property.rate = avg_rate if avg_rate is not None else 0  # Si no hay comentarios, rate será 0
+        property.save()  # Guardamos el cambio en la base de datos
